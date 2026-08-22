@@ -1,6 +1,4 @@
-Pyrogram
+pyrogram
 tgcrypto
-pytgcalls
 yt-dlp
 flask
-ffmpeg-python
