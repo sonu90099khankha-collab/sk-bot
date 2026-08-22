@@ -1,18 +1,9 @@
-import asyncio
-try:
-    asyncio.get_event_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
 from pyrogram import Client, filters
 import os
 from flask import Flask
 from threading import Thread
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from from pytgcalls import PyTgCalls, AudioPiped
-
-from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls import PyTgCalls, AudioPiped
 
 # Flask server to keep Render alive 24/7
 app_flask = Flask(__name__)
@@ -23,7 +14,7 @@ def home():
 
 def run_flask():
     app_flask.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
+    
 # Credentials
 API_ID = 5239609996
 API_HASH = "b18441a1ff607e10a989891a54620000"
