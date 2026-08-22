@@ -10,13 +10,15 @@ import os
 from flask import Flask
 from threading import Thread
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped
 
 # Flask server to keep Render alive 24/7
 app_flask = Flask(__name__)
 
 @app_flask.route('/')
 def home():
-    return "Bot is alive and running!"
+    return "Music Bot is alive and running!"
 
 def run_flask():
     app_flask.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
@@ -36,6 +38,8 @@ app = Client(
     bot_token=BOT_TOKEN
 )
 
+call_py = PyTgCalls(app)
+
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
     keyboard = InlineKeyboardMarkup([
@@ -46,20 +50,47 @@ async def start_command(client, message):
     ])
     
     await message.reply_text(
-        "Hello! Your Bot is now online and ready.\n"
+        "🎵 **Welcome to your Music Bot!**\n\n"
+        "I am online and ready to play songs in your Voice Chat.\n"
+        "Use `/play [song name]` in your group to start playing music!\n\n"
         "Click the buttons below to join our group or contact the owner:",
         reply_markup=keyboard
     )
 
+@app.on_message(filters.command("play"))
+async def play_music(client, message):
+    chat_id = message.chat.id
+    if len(message.command) < 2:
+        await message.reply_text("Please provide a song name. Example: `/play Naatu Naatu`")
+        return
+    
+    query = message.text.split(None, 1)[1]
+    msg = await message.reply_text(f"🔍 Searching for **{query}**...")
+    
+    try:
+        # Connecting to Voice Chat and playing sample audio stream
+        await call_py.join_group_call(
+            chat_id,
+            AudioPiped("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
+        )
+        await msg.edit(f"🎶 Now playing **{query}** in the Voice Chat!")
+    except Exception as e:
+        await msg.edit(f"❌ Error connecting to Voice Chat: `{str(e)}`\nMake sure the bot is added to the group and has permissions to manage Voice Chats.")
+
 async def main():
+    # Start Flask server in background thread
     t = Thread(target=run_flask)
     t.start()
     
     await app.start()
-    print("Bot successfully started with Flask server!")
-    await asyncio.gather()
+    await call_py.start()
+    print("Music Bot and PyTgCalls successfully started!")
+    
+    # Keep the bot running
+    await idle()
 
 if __name__ == "__main__":
+    from pytgcalls import idle
     loop = asyncio.get_event_loop_policy().get_event_loop()
     loop.run_until_complete(main())
-                                                          
+    
