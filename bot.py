@@ -1,16 +1,35 @@
 import asyncio
-import os
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
 from pyrogram import Client, filters
+import random
+from flask import Flask
+from threading import Thread
+import os
+
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls, idle
 from pytgcalls.types import AudioPiped
+
+# Flask server to keep Render alive 24/7
+app_flask = Flask(__name__)
+
+@app_flask.route('/')
+def home():
+    return "Bot is alive and running!"
+
+def run_flask():
+    app_flask.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 # Credentials
 API_ID = 5239609996
 API_HASH = "b18441a1ff607e10a989891a54620000"
 BOT_TOKEN = "7595641951:AAGJ1bJUdX_Bl0p_Wfv8u6fWctnALGUnVTQ"
 
-# Aapke Group aur Owner DM ki links yahan set hain
 GROUP_LINK = "https://t.me/SK_Chatting_Club"
 OWNER_DM = "https://t.me/S_K_KI_NG"
 
@@ -59,11 +78,15 @@ async def play_music(client, message):
         await message.reply_text(f"Error: {str(e)}")
 
 async def main():
+    t = Thread(target=run_flask)
+    t.start()
+    
     await app.start()
     await call_py.start()
-    print("Music Bot successfully started and running with Group & DM buttons!")
+    print("Music Bot successfully started with Flask server!")
     await idle()
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop_policy().get_event_loop()
     loop.run_until_complete(main())
+    
