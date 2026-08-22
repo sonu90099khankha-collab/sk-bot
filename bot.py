@@ -1,13 +1,12 @@
 from pyrogram import Client
 from flask import Flask
 import asyncio
-
+ 
 try:
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 except RuntimeError:
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    
 
 # Flask server to keep Render alive 24/7
 app_flask = Flask(__name__)
