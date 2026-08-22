@@ -1,9 +1,11 @@
-from pyrogram import Client, filters
-import os
-from flask import Flask
-from threading import Thread
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pytgcalls import PyTgCalls, AudioPiped
+import asyncio
+
+try:
+    loop = asyncio.get_event_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
 
 # Flask server to keep Render alive 24/7
 app_flask = Flask(__name__)
