@@ -10,7 +10,8 @@ import os
 from flask import Flask
 from threading import Thread
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pytgcalls import PyTgCalls
+from from pytgcalls import PyTgCalls, AudioPiped
+
 from pytgcalls.types.input_stream import AudioPiped
 
 # Flask server to keep Render alive 24/7
