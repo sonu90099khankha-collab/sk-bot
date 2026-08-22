@@ -6,14 +6,10 @@ except RuntimeError:
     asyncio.set_event_loop(loop)
 
 from pyrogram import Client, filters
-import random
+import os
 from flask import Flask
 from threading import Thread
-import os
-
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pytgcalls import PyTgCalls, idle
-from pytgcalls.types import AudioPiped
 
 # Flask server to keep Render alive 24/7
 app_flask = Flask(__name__)
@@ -40,8 +36,6 @@ app = Client(
     bot_token=BOT_TOKEN
 )
 
-call_py = PyTgCalls(app)
-
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
     keyboard = InlineKeyboardMarkup([
@@ -52,41 +46,20 @@ async def start_command(client, message):
     ])
     
     await message.reply_text(
-        "Hello! Your Music Bot is now online and ready.\n"
-        "Use /play [song name or link] to play music in Voice Chat.\n\n"
+        "Hello! Your Bot is now online and ready.\n"
         "Click the buttons below to join our group or contact the owner:",
         reply_markup=keyboard
     )
-
-@app.on_message(filters.command("play"))
-async def play_music(client, message):
-    chat_id = message.chat.id
-    if len(message.command) < 2:
-        await message.reply_text("Please provide a song name or link. Example: `/play Naatu Naatu`")
-        return
-    
-    query = message.text.split(None, 1)[1]
-    await message.reply_text(f"Searching and connecting to Voice Chat for: **{query}**...")
-    
-    try:
-        await call_py.join_group_call(
-            chat_id,
-            AudioPiped("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
-        )
-        await message.reply_text("Music is now playing successfully in the Voice Chat!")
-    except Exception as e:
-        await message.reply_text(f"Error: {str(e)}")
 
 async def main():
     t = Thread(target=run_flask)
     t.start()
     
     await app.start()
-    await call_py.start()
-    print("Music Bot successfully started with Flask server!")
-    await idle()
+    print("Bot successfully started with Flask server!")
+    await asyncio.gather()
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop_policy().get_event_loop()
     loop.run_until_complete(main())
-    
+                                                          
