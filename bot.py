@@ -11,7 +11,7 @@ from flask import Flask
 from threading import Thread
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
+from pytgcalls.types.input_stream import AudioPiped
 
 # Flask server to keep Render alive 24/7
 app_flask = Flask(__name__)
@@ -83,10 +83,9 @@ async def main():
     await app.start()
     await call_py.start()
     print("Music Bot successfully started!")
-    await idle()
+    await asyncio.gather()
 
 if __name__ == "__main__":
-    from pytgcalls import idle
     loop = asyncio.get_event_loop_policy().get_event_loop()
     loop.run_until_complete(main())
-                 
+    
