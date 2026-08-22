@@ -1,3 +1,5 @@
+from pyrogram import Client
+from flask import Flask
 from flask import Flask
 import asyncio
 
