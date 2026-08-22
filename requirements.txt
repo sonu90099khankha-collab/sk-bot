@@ -1,4 +1,4 @@
-pyrogram
-pytgcalls
-tgcrypto
+pyrogram==2.0.106
+tgcrypto==1.2.5
+pytgcalls==0.9.7
 flask
