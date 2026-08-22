@@ -68,29 +68,25 @@ async def play_music(client, message):
     msg = await message.reply_text(f"🔍 Searching for **{query}**...")
     
     try:
-        # Connecting to Voice Chat and playing sample audio stream
         await call_py.join_group_call(
             chat_id,
             AudioPiped("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
         )
         await msg.edit(f"🎶 Now playing **{query}** in the Voice Chat!")
     except Exception as e:
-        await msg.edit(f"❌ Error connecting to Voice Chat: `{str(e)}`\nMake sure the bot is added to the group and has permissions to manage Voice Chats.")
+        await msg.edit(f"❌ Error: `{str(e)}`")
 
 async def main():
-    # Start Flask server in background thread
     t = Thread(target=run_flask)
     t.start()
     
     await app.start()
     await call_py.start()
-    print("Music Bot and PyTgCalls successfully started!")
-    
-    # Keep the bot running
+    print("Music Bot successfully started!")
     await idle()
 
 if __name__ == "__main__":
     from pytgcalls import idle
     loop = asyncio.get_event_loop_policy().get_event_loop()
     loop.run_until_complete(main())
-    
+                 
