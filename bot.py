@@ -25,16 +25,15 @@ def home():
 def run_flask():
     app_flask.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
-# Credentials
-API_ID = 5239609996
-API_HASH = "b18441a1ff607e10a989891a54620000"
-BOT_TOKEN = "7595641951:AAGJ1bJUdX_Bl0p_Wfv8u6fWctnALGUnVTQ"
+# Credentials (Loaded securely from Render Environment Variables)
+API_ID = int(os.environ.get("API_ID", "0"))
+API_HASH = os.environ.get("API_HASH", "")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 
 GROUP_LINK = "https://t.me/SK_Chatting_Club"
 OWNER_DM = "https://t.me/S_K_KI_NG"
 
 # यहाँ अपनी फोटो की डायरेक्ट Raw लिंक डालें (जो गिटहब में अपलोड होगी)
-# उदाहरण के लिए: "https://raw.githubusercontent.com/sonu90099khankha-collab/sk-bot/main/my_photo.jpg"
 USER_DP_URL = "https://raw.githubusercontent.com/sonu90099khankha-collab/sk-bot/main/my_photo.jpg"
 
 # Initialize Pyrogram Client and PyTgCalls
@@ -112,4 +111,3 @@ async def main():
 
 if __name__ == "__main__":
     loop.run_until_complete(main())
-         
