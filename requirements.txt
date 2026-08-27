@@ -1,4 +1,6 @@
-pyrogram
-tgcrypto
-yt-dlp
-flask
+Pyrogram==2.0.106
+TgCrypto
+pytgcalls==3.0.0
+yt_dlp
+aiohttp
+psutil
