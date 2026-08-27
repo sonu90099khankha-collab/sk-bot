@@ -10,7 +10,9 @@ except RuntimeError:
 
 from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, VideoPiped
+from pytgcalls.types.audio import AudioPiped
+from pytgcalls.types.video import VideoPiped
+
 
 API_ID = int(os.environ.get("API_ID", 0))
 API_HASH = os.environ.get("API_HASH", "")
