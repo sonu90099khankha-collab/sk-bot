@@ -8,10 +8,9 @@ API_ID = int(os.environ.get("API_ID", 0))
 API_HASH = os.environ.get("API_HASH", "")
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 
-# Your custom links provided by you
 CHANNEL_LINK = "https://t.me/Love_Angels_10"
-OWNER_CONTACT = "https://t.me/Love_Angels_10"  # Direct DM / Owner link
-GROUP_LINK = "https://t.me/Love_Angels_10"     # Group promotion link
+OWNER_CONTACT = "https://t.me/Love_Angels_10"
+GROUP_LINK = "https://t.me/Love_Angels_10"
 
 app = Client(
     "VCPlayerBot",
@@ -74,6 +73,7 @@ async def stop_call(client, message):
     await message.reply(f"⏹️ Left the voice chat.\nSupport us: {CHANNEL_LINK}")
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(call_py.start())
-    app.run()
+    app.start()
+    call_py.start()
+    asyncio.get_event_loop().run_forever()
+    
