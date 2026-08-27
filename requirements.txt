@@ -1,6 +1,6 @@
 pyrogram==2.0.106
 TgCrypto
-py-tgcalls
+py-tgcalls==3.0.0.dev24
 yt_dlp
 aiohttp
 psutil
