@@ -1,7 +1,7 @@
 import os
 import asyncio
 
-# Event loop error fix
+# Event loop fix for async operations
 try:
     asyncio.get_event_loop()
 except RuntimeError:
