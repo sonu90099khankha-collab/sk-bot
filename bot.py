@@ -4,11 +4,11 @@ try:
 except RuntimeError:
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    import os
-import asyncio
+
+import os
 from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
-from pytgcalls.types.stream import StreamAudioPiped, StreamVideoPiped
+from pytgcalls.types import AudioPiped, VideoPiped
 
 API_ID = int(os.environ.get("API_ID", 0))
 API_HASH = os.environ.get("API_HASH", "")
@@ -51,7 +51,7 @@ async def play_audio(client, message):
     try:
         await call_py.join_group_call(
             chat_id,
-            StreamAudioPiped("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            AudioPiped("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
         )
     except Exception as e:
         await message.reply(f"Error: {e}")
@@ -67,7 +67,7 @@ async def play_video(client, message):
     try:
         await call_py.join_group_call(
             chat_id,
-            StreamVideoPiped("https://www.youtube.com/watch?v=jNQXAC9IVRw")
+            VideoPiped("https://www.youtube.com/watch?v=jNQXAC9IVRw")
         )
     except Exception as e:
         await message.reply(f"Error: {e}")
