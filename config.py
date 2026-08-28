@@ -11,7 +11,16 @@ from flask import Flask
 from threading import Thread
 import os
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioStream, VideoStream
+
+# Safe import for Audio/Video streams
+try:
+    from pytgcalls.types import AudioPiped, VideoPiped
+except ImportError:
+    try:
+        from pytgcalls.types.input_stream import AudioPiped, VideoPiped
+    except ImportError:
+        AudioPiped = None
+        VideoPiped = None
 
 API_ID = int(os.environ.get("API_ID", 0))
 API_HASH = os.environ.get("API_HASH", "")
@@ -29,9 +38,6 @@ app = Client(
 )
 
 call_py = PyTgCalls(app)
-
-AudioPiped = AudioStream
-VideoPiped = VideoStream
 
 flask_app = Flask(__name__)
 
