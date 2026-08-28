@@ -1,3 +1,4 @@
+from converter import AudioPiped, VideoPiped
 import asyncio
 from config import app, call_py, GROUP_LINK, CHANNEL_LINK, OWNER_CONTACT, AudioPiped, VideoPiped, filters
 
