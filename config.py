@@ -1,16 +1,9 @@
-try:
-    from pytgcalls.types import AudioPiped, VideoPiped
-except ImportError:
-    try:
-        from pytgcalls.types.input_stream import AudioPiped, VideoPiped
-    except ImportError:
-        AudioPiped = None
-        VideoPiped = None
+import os
 
-import sys
-from pyrogram import errors
-if not hasattr(errors, "GroupcallForbidden"):
-    class GroupcallForbidden(Exception):
-        pass
-    errors.GroupcallForbidden = GroupcallForbidden
-    
+API_ID = int(os.environ.get("API_ID", "0"))
+API_HASH = os.environ.get("API_HASH", "")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+
+GROUP_LINK = os.environ.get("GROUP_LINK", "https://t.me/your_group")
+CHANNEL_LINK = os.environ.get("CHANNEL_LINK", "https://t.me/your_channel")
+OWNER_CONTACT = os.environ.get("OWNER_CONTACT", "@your_username")
