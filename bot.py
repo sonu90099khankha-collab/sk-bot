@@ -1,6 +1,18 @@
-from converter import AudioPiped, VideoPiped
 import asyncio
-from config import app, call_py, GROUP_LINK, CHANNEL_LINK, OWNER_CONTACT, AudioPiped, VideoPiped, filters
+from pyrogram import Client, filters
+from pytgcalls import PyTgCalls
+from converter import AudioPiped, VideoPiped
+import config
+from config import API_ID, API_HASH, BOT_TOKEN, GROUP_LINK, CHANNEL_LINK, OWNER_CONTACT
+
+app = Client(
+    "VCPlayerBot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
+
+call_py = PyTgCalls(app)
 
 @app.on_message(filters.command("start"))
 async def start_handler(client, message):
@@ -50,8 +62,11 @@ async def play_video(client, message):
 @app.on_message(filters.command("stop"))
 async def stop_call(client, message):
     chat_id = message.chat.id
-    await call_py.leave_group_call(chat_id)
-    await message.reply(f"⏹️ Left the voice chat.\nSupport us: {CHANNEL_LINK}")
+    try:
+        await call_py.leave_group_call(chat_id)
+        await message.reply(f"⏹️ Left the voice chat.\nSupport us: {CHANNEL_LINK}")
+    except Exception as e:
+        await message.reply(f"Error: {e}")
 
 if __name__ == "__main__":
     app.start()
