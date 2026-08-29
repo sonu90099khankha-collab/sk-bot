@@ -1,101 +1,115 @@
-import asyncio
-try:
-    asyncio.get_event_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
 import os
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
+import asyncio
 import yt_dlp
+from pyrogram import Client, filters, idle
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped, VideoPiped
+import config
+from config import API_ID, API_HASH, BOT_TOKEN
 
-API_ID = int(os.environ.get("API_ID", 0))
-API_HASH = os.environ.get("API_HASH", "")
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+# Render ke liye chhota sa fake web server jo port pakad kar rakhega
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
 
-app = Client("sk_music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+def run_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), SimpleHandler)
+    server.serve_forever()
+
+# Server ko background me chala do taaki Render khush rahe
+threading.Thread(target=run_server, daemon=True).start()
+
+app = Client(
+    "VCPlayerBot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
+
 call_py = PyTgCalls(app)
 
-@app.on_message(filters.command("start") & filters.private)
-async def start_cmd(client, message):
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💬 Contact Owner", url="https://t.me/SK_KING_CHILL")]
-    ])
-    await message.reply(
-        "🎵 **Welcome to SK Music VC Bot!**\n\n"
-        "Add me to your group, turn on the Voice Chat, and type:\n"
-        "`/play [song name]` to play music in VC!\n\n"
-        "To contact the owner, click below:",
-        reply_markup=keyboard
-    )
+def get_yt_url(query):
+    ydl_opts = {"format": "bestaudio/best", "noplaylist": True}
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            if query.startswith("http"):
+                info = ydl.extract_info(query, download=False)
+                return info.get("url")
+            else:
+                info = ydl.extract_info(f"ytsearch:{query}", download=False)
+                if "entries" in info:
+                    return info["entries"][0]["url"]
+        except Exception:
+            pass
+        return None
 
-@app.on_message(~filters.me & filters.private & ~filters.command(["start", "play", "stop"]))
-async def forward_to_owner(client, message):
-    try:
-        await message.forward(chat_id="SK_KING_CHILL")
-        await message.reply("✅ Your message has been sent to the Owner (@SK_KING_CHILL). They will reply soon!")
-    except Exception as e:
-        print(f"Forward error: {e}")
+@app.on_message(filters.command("start"))
+async def start_handler(client, message):
+    text = (
+        "👋 Music & Video VC Bot is online!\n\n"
+        "🎵 Play Audio: /play <song name or url>\n"
+        "📺 Play Video: /video <video name or url>\n"
+        "⏹️ Stop: /stop\n"
+    )
+    await message.reply(text, disable_web_page_preview=True)
 
 @app.on_message(filters.command("play"))
-async def play_media(client, message):
-    if len(message.command) < 2:
-        await message.reply("⚠️ Please provide a song name, e.g., `/play kesariya`")
-        return
-        
+async def play_audio(client, message):
+    chat_id = message.chat.id
     query = " ".join(message.command[1:])
-    m = await message.reply("🔍 Searching on YouTube...")
+    if not query:
+        return await message.reply("Please provide a song name or YouTube link to play!")
     
-    ydl_opts = {
-        "format": "bestaudio/best",
-        "noplaylist": True,
-        "quiet": True,
-        "default_search": "ytsearch",
-    }
-    
+    m = await message.reply("🔍 Searching...")
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(f"ytsearch:{query}", download=False)
-            if "entries" in info and len(info["entries"]) > 0:
-                media_info = info["entries"][0]
-                url = media_info["url"]
-                title = media_info.get("title", "Unknown")
-            else:
-                await m.edit("❌ Media not found!")
-                return
-                
-        chat_id = message.chat.id
+        url = get_yt_url(query)
+        if not url:
+            return await m.edit("❌ Song not found!")
+        
+        await m.edit("🎵 Playing audio...")
         await call_py.join_group_call(
             chat_id,
             AudioPiped(url)
         )
-        
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("💬 Contact Owner", url="https://t.me/SK_KING_CHILL")]
-        ])
-        
-        await m.edit(f"▶️ **Now Playing in VC:** {title}", reply_markup=keyboard)
     except Exception as e:
-        await m.edit(f"❌ Error: `{e}`")
+        await m.edit(f"Error: {e}")
+
+@app.on_message(filters.command("video"))
+async def play_video(client, message):
+    chat_id = message.chat.id
+    query = " ".join(message.command[1:])
+    if not query:
+        return await message.reply("Please provide a video name or YouTube link to play!")
+    
+    m = await message.reply("🔍 Searching...")
+    try:
+        url = get_yt_url(query)
+        if not url:
+            return await m.edit("❌ Video not found!")
+        
+        await m.edit("📺 Playing video...")
+        await call_py.join_group_call(
+            chat_id,
+            VideoPiped(url)
+        )
+    except Exception as e:
+        await m.edit(f"Error: {e}")
 
 @app.on_message(filters.command("stop"))
-async def stop_media(client, message):
+async def stop_call(client, message):
+    chat_id = message.chat.id
     try:
-        await call_py.leave_group_call(message.chat.id)
-        await message.reply("⏹️ VC Stream stopped.")
+        await call_py.leave_group_call(chat_id)
+        await message.reply("⏹️ Left the voice chat.")
     except Exception as e:
-        await message.reply(f"❌ Error: `{e}`")
+        await message.reply(f"Error: {e}")
 
-async def main():
-    await app.start()
-    await call_py.start()
-    print("Music VC Bot started successfully!")
-    await asyncio.gather(asyncio.Event().wait())
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    
+if name == "main":
+    app.start()
+    call_py.start()
+    idle()
