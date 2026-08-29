@@ -3,7 +3,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types import InputAudioStream
+from pytgcalls.types import AudioPiped
 import yt_dlp
 
 API_ID = int(os.environ.get("API_ID", 0))
@@ -64,7 +64,7 @@ async def play_media(client, message):
         chat_id = message.chat.id
         await call_py.join_group_call(
             chat_id,
-            InputAudioStream(url)
+            AudioPiped(url)
         )
         
         keyboard = InlineKeyboardMarkup([
@@ -92,3 +92,4 @@ async def main():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
+    
