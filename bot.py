@@ -1,9 +1,15 @@
-import os
 import asyncio
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+import os
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
+from pytgcalls.types.input_stream import AudioPiped
 import yt_dlp
 
 API_ID = int(os.environ.get("API_ID", 0))
@@ -19,9 +25,9 @@ async def start_cmd(client, message):
         [InlineKeyboardButton("💬 Contact Owner", url="https://t.me/SK_KING_CHILL")]
     ])
     await message.reply(
-        "🎵 **Welcome to SK Music Bot!**\n\n"
-        "Add me to your group, turn on video chat, and type:\n"
-        "`/play [song name]` to play music.\n\n"
+        "🎵 **Welcome to SK Music VC Bot!**\n\n"
+        "Add me to your group, turn on the Voice Chat, and type:\n"
+        "`/play [song name]` to play music in VC!\n\n"
         "To contact the owner, click below:",
         reply_markup=keyboard
     )
@@ -71,7 +77,7 @@ async def play_media(client, message):
             [InlineKeyboardButton("💬 Contact Owner", url="https://t.me/SK_KING_CHILL")]
         ])
         
-        await m.edit(f"▶️ **Now Playing:** {title}", reply_markup=keyboard)
+        await m.edit(f"▶️ **Now Playing in VC:** {title}", reply_markup=keyboard)
     except Exception as e:
         await m.edit(f"❌ Error: `{e}`")
 
@@ -79,14 +85,14 @@ async def play_media(client, message):
 async def stop_media(client, message):
     try:
         await call_py.leave_group_call(message.chat.id)
-        await message.reply("⏹️ Stream stopped.")
+        await message.reply("⏹️ VC Stream stopped.")
     except Exception as e:
         await message.reply(f"❌ Error: `{e}`")
 
 async def main():
     await app.start()
     await call_py.start()
-    print("Bot started successfully!")
+    print("Music VC Bot started successfully!")
     await asyncio.gather(asyncio.Event().wait())
 
 if __name__ == "__main__":
