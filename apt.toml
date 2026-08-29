@@ -1,5 +1,5 @@
-build_packages = [
-  "git",
-  "python3-dev",
-  "build-essential"
+packages = [
+  "ffmpeg",
+  "libopus0",
+  "libopus-dev"
 ]
