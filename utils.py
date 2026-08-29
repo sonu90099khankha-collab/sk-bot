@@ -1,13 +1,17 @@
 import yt_dlp
 
-def get_yt_url(query):
+def get_yt_url(query, is_video=False):
+    # Agar video chahiye toh format badal jayega, audio ke liye sirf bestaudio
+    ydl_format = "best/bestvideo+bestaudio" if is_video else "bestaudio/best"
+    
     ydl_opts = {
-        "format": "bestaudio/best",
+        "format": ydl_format,
         "noplaylist": True,
         "quiet": True,
         "no_warnings": True,
         "extractor_args": {"youtube": {"player_client": ["android", "web"]}}
     }
+    
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             if query.startswith("http"):
@@ -36,4 +40,4 @@ def get_yt_url(query):
             pass
             
         return None
-          
+    
