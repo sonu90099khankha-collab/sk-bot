@@ -3,7 +3,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types import VideoPiped
+from pytgcalls.types import InputAudioStream
 import yt_dlp
 
 API_ID = int(os.environ.get("API_ID", 0))
@@ -44,7 +44,7 @@ async def play_media(client, message):
     m = await message.reply("🔍 Searching on YouTube...")
     
     ydl_opts = {
-        "format": "best",
+        "format": "bestaudio/best",
         "noplaylist": True,
         "quiet": True,
         "default_search": "ytsearch",
@@ -64,7 +64,7 @@ async def play_media(client, message):
         chat_id = message.chat.id
         await call_py.join_group_call(
             chat_id,
-            VideoPiped(url)
+            InputAudioStream(url)
         )
         
         keyboard = InlineKeyboardMarkup([
