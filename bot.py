@@ -1,3 +1,21 @@
+import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
+
+# Render ke liye chhota sa fake web server jo port pakड़ kar rakhega
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
+
+def run_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), SimpleHandler)
+    server.serve_forever()
+
+# Server ko background me chala do taaki Render khush rahe
+threading.Thread(target=run_server, daemon=True).start()
 import asyncio
 import yt_dlp
 from pyrogram import Client, filters
