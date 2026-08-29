@@ -1,8 +1,15 @@
 import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
+import asyncio
+import yt_dlp
+from pyrogram import Client, filters, idle
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped, VideoPiped
+import config
+from config import API_ID, API_HASH, BOT_TOKEN
 
-# Render ke liye chhota sa fake web server jo port pakड़ kar rakhega
+# Render ke liye chhota sa fake web server jo port pakad kar rakhega
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -16,13 +23,6 @@ def run_server():
 
 # Server ko background me chala do taaki Render khush rahe
 threading.Thread(target=run_server, daemon=True).start()
-import asyncio
-import yt_dlp
-from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
-from converter import AudioPiped, VideoPiped
-import config
-from config import API_ID, API_HASH, BOT_TOKEN, GROUP_LINK, CHANNEL_LINK, OWNER_CONTACT
 
 app = Client(
     "VCPlayerBot",
@@ -39,25 +39,22 @@ def get_yt_url(query):
         try:
             if query.startswith("http"):
                 info = ydl.extract_info(query, download=False)
-                return info.get("url") or query
+                return info.get("url")
             else:
                 info = ydl.extract_info(f"ytsearch:{query}", download=False)
-                if "entries" in info and info["entries"]:
-                    return info["entries"][0].get("url") or info["entries"][0].get("webpage_url")
+                if "entries" in info:
+                    return info["entries"][0]["url"]
         except Exception:
             pass
-    return None
+        return None
 
 @app.on_message(filters.command("start"))
 async def start_handler(client, message):
     text = (
-        "👋 **Music & Video VC Bot is Active!**\n\n"
-        "🎵 Play Audio: `/play <song name or link>`\n"
-        "📺 Play Video: `/video <video name or link>`\n"
-        "⏹️ Stop: `/stop`\n\n"
-        f"📢 **Channel:** {CHANNEL_LINK}\n"
-        f"👑 **Owner:** {OWNER_CONTACT}\n"
-        f"🌐 **Group:** {GROUP_LINK}"
+        "👋 **Music & Video VC Bot is online!**\n\n"
+        "🎵 Play Audio: `/play <song name or url>`\n"
+        "📺 Play Video: `/video <video name or url>`\n"
+        "⏹️ Stop: `/stop`\n"
     )
     await message.reply(text, disable_web_page_preview=True)
 
@@ -68,13 +65,13 @@ async def play_audio(client, message):
     if not query:
         return await message.reply("Please provide a song name or YouTube link to play!")
     
-    m = await message.reply("🔍 Searching on YouTube...")
+    m = await message.reply("🔍 Searching...")
     try:
         url = get_yt_url(query)
         if not url:
-            return await m.edit("❌ Song not found on YouTube!")
+            return await m.edit("❌ Song not found!")
         
-        await m.edit(f"🎵 Playing audio in VC...")
+        await m.edit("🎵 Playing audio...")
         await call_py.join_group_call(
             chat_id,
             AudioPiped(url)
@@ -89,13 +86,13 @@ async def play_video(client, message):
     if not query:
         return await message.reply("Please provide a video name or YouTube link to play!")
     
-    m = await message.reply("🔍 Searching video on YouTube...")
+    m = await message.reply("🔍 Searching...")
     try:
         url = get_yt_url(query)
         if not url:
-            return await m.edit("❌ Video not found on YouTube!")
+            return await m.edit("❌ Video not found!")
         
-        await m.edit(f"📺 Playing video in VC...")
+        await m.edit("📺 Playing video...")
         await call_py.join_group_call(
             chat_id,
             VideoPiped(url)
@@ -113,9 +110,7 @@ async def stop_call(client, message):
         await message.reply(f"Error: {e}")
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     app.start()
     call_py.start()
-    loop.run_forever()
-                
+    idle()
+    
