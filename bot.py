@@ -5,11 +5,17 @@ import asyncio
 import yt_dlp
 from pyrogram import Client, filters, idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, VideoPiped
-import config
-from config import API_ID, API_HASH, BOT_TOKEN
 
-# Render ke liye chhota sa fake web server jo port pakad kar rakhega
+# Safe import for AudioPiped and VideoPiped across different pytgcalls versions
+try:
+    from pytgcalls.types import AudioPiped, VideoPiped
+except ImportError:
+    try:
+        from pytgcalls.types.input_stream import AudioPiped, VideoPiped
+    except ImportError:
+        from pytgcalls.types.input_stream.quality import AudioPiped, VideoPiped
+
+# Fake web server to keep the port active on Render
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -21,12 +27,16 @@ def run_server():
     server = HTTPServer(("0.0.0.0", port), SimpleHandler)
     server.serve_forever()
 
-# Server ko background me chala do taaki Render khush rahe
 threading.Thread(target=run_server, daemon=True).start()
+
+# Load credentials directly from Render environment variables
+API_ID = os.getenv("API_ID")
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 app = Client(
     "VCPlayerBot",
-    api_id=API_ID,
+    api_id=int(API_ID) if API_ID else 0,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN
 )
@@ -81,8 +91,7 @@ async def play_audio(client, message):
 
 @app.on_message(filters.command("video"))
 async def play_video(client, message):
-    chat_id = message.chat.id
-    query = " ".join(message.command[1:])
+    chat_id, query = message.chat.id, " ".join(message.command[1:])
     if not query:
         return await message.reply("Please provide a video name or YouTube link to play!")
     
@@ -113,3 +122,4 @@ if __name__ == "__main__":
     app.start()
     call_py.start()
     idle()
+    
