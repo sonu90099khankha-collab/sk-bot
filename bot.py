@@ -109,8 +109,7 @@ async def stop_call(client, message):
     except Exception as e:
         await message.reply(f"Error: {e}")
 
-if __name__ == "__main__":
+if name == "main":
     app.start()
     call_py.start()
     idle()
-                    
