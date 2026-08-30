@@ -4,8 +4,8 @@ import threading
 import asyncio
 import yt_dlp
 from pyrogram import Client, filters, idle
-from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
-
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped, VideoPiped
 import config
 from config import API_ID, API_HASH, BOT_TOKEN
 
@@ -71,13 +71,13 @@ async def play_audio(client, message):
         if not url:
             return await m.edit("❌ Song not found!")
         
-        await m.edit("🎵 Playing audio...")
+        await m.edit("🎵 Playing audio in VC...")
         await call_py.join_group_call(
             chat_id,
             AudioPiped(url)
         )
     except Exception as e:
-        await m.edit(f"Error: {e}")
+        await m.edit(f"❌ Error: {e}\n\n💡 Make sure the bot is an Admin with 'Manage Video Chats' permission!")
 
 @app.on_message(filters.command("video"))
 async def play_video(client, message):
@@ -92,13 +92,13 @@ async def play_video(client, message):
         if not url:
             return await m.edit("❌ Video not found!")
         
-        await m.edit("📺 Playing video...")
+        await m.edit("📺 Playing video in VC...")
         await call_py.join_group_call(
             chat_id,
             VideoPiped(url)
         )
     except Exception as e:
-        await m.edit(f"Error: {e}")
+        await m.edit(f"❌ Error: {e}\n\n💡 Make sure the bot is an Admin with 'Manage Video Chats' permission!")
 
 @app.on_message(filters.command("stop"))
 async def stop_call(client, message):
@@ -109,7 +109,7 @@ async def stop_call(client, message):
     except Exception as e:
         await message.reply(f"Error: {e}")
 
-if name == "main":
+if __name__ == "__main__":
     app.start()
     call_py.start()
     idle()
