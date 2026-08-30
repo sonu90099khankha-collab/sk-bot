@@ -5,7 +5,8 @@ import asyncio
 import yt_dlp
 from pyrogram import Client, filters, idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, VideoPiped
+from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types.input_stream import VideoPiped
 import config
 from config import API_ID, API_HASH, BOT_TOKEN
 
@@ -109,7 +110,8 @@ async def stop_call(client, message):
     except Exception as e:
         await message.reply(f"Error: {e}")
 
-if name == "main":
+if __name__ == "__main__":
     app.start()
     call_py.start()
     idle()
+                    
