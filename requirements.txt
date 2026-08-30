@@ -1,4 +1,2 @@
-pytgcalls==3.0.0
+pytgcalls
 pyrogram
-# add your other required libraries here
-pip install -r requirements.txt
