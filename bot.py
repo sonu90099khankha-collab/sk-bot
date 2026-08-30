@@ -4,8 +4,8 @@ import threading
 import asyncio
 import yt_dlp
 from pyrogram import Client, filters, idle
-from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, VideoPiped
+from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
+
 import config
 from config import API_ID, API_HASH, BOT_TOKEN
 
