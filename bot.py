@@ -84,7 +84,7 @@ async def play_video(client, message):
     if not query:
         return await message.reply("Please give a video name or YouTube link!")
     
-    m =აზე message.reply("🔍 Searching video...")
+    m = await message.reply("🔍 Searching video...")
     try:
         url = get_yt_url(query)
         if not url:
@@ -113,4 +113,3 @@ async def main():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
-    
