@@ -23,7 +23,8 @@ async def start_vc_player(call_py, chat_id, url, is_video=False):
                 AudioPiped(url)
             )
         return True
-    except Exception:
+    except Exception as e:
+        print(f"VC Error: {e}")
         return False
 
 async def stop_vc_player(call_py, chat_id):
@@ -33,4 +34,4 @@ async def stop_vc_player(call_py, chat_id):
         await call_py.leave_group_call(chat_id)
     except Exception:
         pass
-                          
+        
