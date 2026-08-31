@@ -1,5 +1,5 @@
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
+from pytgcalls.types import StreamAudio
 
 def setup_calls(app):
     return PyTgCalls(app)
@@ -8,7 +8,7 @@ async def play_audio_stream(call_py, chat_id, url):
     try:
         await call_py.join_group_call(
             chat_id,
-            AudioPiped(url)
+            StreamAudio(url)
         )
     except Exception:
         pass
