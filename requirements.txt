@@ -1,4 +1,3 @@
-pyrogram==2.0.106
-tgcalls==0.3.3
-pytgcalls==3.0.0.b12
+pyrogram
+pytgcalls
 yt-dlp
