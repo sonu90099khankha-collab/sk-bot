@@ -1,6 +1,4 @@
-
-pytgcalls>=3.0.0
-yt-dlp
 pyrogram
-tgcalls
+tgcrypto
+py-tgcalls
 yt-dlp
