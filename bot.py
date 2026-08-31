@@ -2,17 +2,20 @@ import os
 import asyncio
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
-import yt_dlp
 from pyrogram import Client, filters
 
-# Safely import VC handler so that even if it fails, the main bot stays alive
 try:
     from vc_handler import setup_vc_calls, start_vc_player, stop_vc_player
     VC_AVAILABLE = True
 except Exception:
     VC_AVAILABLE = False
 
-# Render keep-alive web server
+try:
+    from yt_handler import get_youtube_stream_url
+    YT_AVAILABLE = True
+except Exception:
+    YT_AVAILABLE = False
+
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -29,7 +32,7 @@ API_ID = int(os.getenv("API_ID", "0"))
 API_HASH = os.getenv("API_HASH", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
-app = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("music_bot_v4", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 call_py = None
 if VC_AVAILABLE:
@@ -37,21 +40,6 @@ if VC_AVAILABLE:
         call_py = setup_vc_calls(app)
     except Exception:
         call_py = None
-
-def get_yt_url(query):
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'noplaylist': True,
-        'quiet': True,
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        try:
-            info = ydl.extract_info(f"ytsearch:{query}", download=False)
-            if 'entries' in info:
-                info = info['entries'][0]
-            return info['url']
-        except Exception:
-            return None
 
 @app.on_message(filters.command("start"))
 async def start_cmd(client, message):
@@ -69,12 +57,16 @@ async def play_audio(client, message):
     chat_id = message.chat.id
     query = " ".join(message.command[1:])
     if not query:
-        return await message.reply("Please provide a song name! Example: `/play fading`")
+        return await message.reply("Please provide a song name! Example: `/play Fading`")
 
-    m = await message.reply("🔍 Searching for the song...")
-    url = get_yt_url(query)
+    m = await message.reply("🔍 Searching across web & YouTube...")
+    
+    if not YT_AVAILABLE:
+        return await m.edit("Search handler is missing!")
+
+    url = get_youtube_stream_url(query)
     if not url:
-        return await m.edit("Song not found!")
+        return await m.edit("Song not found anywhere! Try another name.")
 
     if not VC_AVAILABLE or not call_py:
         return await m.edit("▶️ Song found, but Voice Chat module is inactive.")
@@ -84,29 +76,33 @@ async def play_audio(client, message):
     if success:
         await m.edit("▶️ Playing audio in Voice Chat!")
     else:
-        await m.edit("❌ Failed to join Voice Chat, but bot is safe and running!")
+        await m.edit("❌ Failed to join Voice Chat. Check if VC is open!")
 
 @app.on_message(filters.command("vplay"))
 async def play_video(client, message):
     chat_id = message.chat.id
     query = " ".join(message.command[1:])
     if not query:
-        return await message.reply("Please provide a video name! Example: `/vplay fading`")
+        return await message.reply("Please provide a video name! Example: `/vplay Pathaan`")
 
-    m = await message.reply("🔍 Searching for the video...")
-    url = get_yt_url(query)
+    m = await message.reply("🔍 Searching across web & YouTube...")
+    
+    if not YT_AVAILABLE:
+        return await m.edit("Search handler is missing!")
+
+    url = get_youtube_stream_url(query)
     if not url:
-        return await m.edit("Video not found!")
+        return await m.edit("Video not found anywhere! Try another name.")
 
     if not VC_AVAILABLE or not call_py:
-        return await m.edit("▶️ Video found, but Voice Chat module is inactive.")
+        return await m.edit("Video found, but Voice Chat module is inactive.")
 
     await m.edit("🎥 Connecting to Voice Chat for Video...")
     success = await start_vc_player(call_py, chat_id, url, is_video=True)
     if success:
         await m.edit("🎬 Playing video in Voice Chat!")
     else:
-        await m.edit("❌ Failed to stream video, but bot is safe and running!")
+        await m.edit("❌ Failed to stream video. Check if VC is open!")
 
 @app.on_message(filters.command("stop"))
 async def stop_call(client, message):
