@@ -32,7 +32,8 @@ API_ID = int(os.getenv("API_ID", "0"))
 API_HASH = os.getenv("API_HASH", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
-app = Client("music_bot_v4", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+# यहाँ नया सेशन नाम डाल दिया है ताकि FloodWait एरर न आए
+app = Client("sk_music_bot_final", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 call_py = None
 if VC_AVAILABLE:
@@ -116,4 +117,3 @@ async def stop_call(client, message):
 
 if __name__ == "__main__":
     app.run()
-    
