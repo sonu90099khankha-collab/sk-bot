@@ -1,4 +1,5 @@
 import urllib.request
+import urllib.parse
 import json
 
 def get_youtube_stream_url(query):
@@ -9,8 +10,11 @@ def get_youtube_stream_url(query):
         return query
         
     try:
-        formatted_query = query.replace(" ", "+")
-        api_url = f"https://invidious.perennialverse.net/api/v1/search?q={formatted_query}&type=video"
+        # Properly encodes the query to prevent ascii codec errors with Hindi or special characters
+        encoded_query = urllib.parse.quote(query)
+        
+        # Using a stable Invidious instance API
+        api_url = f"https://vid.puffyan.us/api/v1/search?q={encoded_query}&type=video"
         
         req = urllib.request.Request(
             api_url, 
