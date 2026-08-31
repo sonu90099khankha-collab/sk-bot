@@ -1,6 +1,5 @@
 from pytgcalls import PyTgCalls
 from pytgcalls.types import MediaStream
-from pytgcalls.exceptions import GroupCallNotFound
 
 def setup_calls(app):
     return PyTgCalls(app)
@@ -14,7 +13,7 @@ async def play_audio_stream(call_py, chat_id, url):
                 stream_type=MediaStream.Audio
             )
         )
-    except GroupCallNotFound:
+    except Exception:
         pass
 
 async def stop_stream(call_py, chat_id):
