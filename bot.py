@@ -4,10 +4,10 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
 import yt_dlp
 from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped, VideoPiped
+from config import API_ID, API_HASH, BOT_TOKEN
+from stream_helper import setup_calls, play_audio_stream, play_video_stream, stop_stream
 
-# Render port keep-alive server
+# Render keep-alive web server
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -21,18 +21,14 @@ def run_server():
 
 threading.Thread(target=run_server, daemon=True).start()
 
-API_ID = os.getenv("API_ID")
-API_HASH = os.getenv("API_HASH")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
 app = Client(
     "VCPlayerBot",
-    api_id=int(API_ID) if API_ID else 0,
-    api_hash=API_HASH or "",
-    bot_token=BOT_TOKEN or ""
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
 )
 
-call_py = PyTgCalls(app)
+call_py = setup_calls(app)
 
 def get_yt_url(query):
     ydl_opts = {"format": "bestaudio/best", "noplaylist": True, "quiet": True}
@@ -52,10 +48,10 @@ def get_yt_url(query):
 @app.on_message(filters.command("start"))
 async def start_handler(client, message):
     text = (
-        "👋 VC Music & Video Bot is Online!\n\n"
-        "🎵 Play Audio: /play <song name>\n"
-        "📺 Play Video: /video <video name>\n"
-        "⏹️ Stop: /stop"
+        "VC Music & Video Bot is Online!\n\n"
+        "Play Audio: /play <song name>\n"
+        "Play Video: /video <video name>\n"
+        "Stop: /stop"
     )
     await message.reply(text)
 
@@ -66,16 +62,16 @@ async def play_audio(client, message):
     if not query:
         return await message.reply("Please give a song name or YouTube link!")
     
-    m = await message.reply("🔍 Searching song...")
+    m = await message.reply("Searching song...")
     try:
         url = get_yt_url(query)
         if not url:
-            return await m.edit("❌ Song not found!")
+            return await m.edit("Song not found!")
         
-        await m.edit("🎵 Playing audio in Voice Chat...")
-        await call_py.join_group_call(chat_id, AudioPiped(url))
+        await m.edit("Playing audio in Voice Chat...")
+        await play_audio_stream(call_py, chat_id, url)
     except Exception as e:
-        await m.edit(f"❌ Error: {e}")
+        await m.edit(f"Error: {e}")
 
 @app.on_message(filters.command("video"))
 async def play_video(client, message):
@@ -84,23 +80,23 @@ async def play_video(client, message):
     if not query:
         return await message.reply("Please give a video name or YouTube link!")
     
-    m = await message.reply("🔍 Searching video...")
+    m = await message.reply("Searching video...")
     try:
         url = get_yt_url(query)
         if not url:
-            return await m.edit("❌ Video not found!")
+            return await m.edit("Video not found!")
         
-        await m.edit("📺 Playing video in Voice Chat...")
-        await call_py.join_group_call(chat_id, VideoPiped(url))
+        await m.edit("Playing video in Voice Chat...")
+        await play_video_stream(call_py, chat_id, url)
     except Exception as e:
-        await m.edit(f"❌ Error: {e}")
+        await m.edit(f"Error: {e}")
 
 @app.on_message(filters.command("stop"))
 async def stop_call(client, message):
     chat_id = message.chat.id
     try:
-        await call_py.leave_group_call(chat_id)
-        await message.reply("⏹️ Stopped and left the voice chat.")
+        await stop_stream(call_py, chat_id)
+        await message.reply("Stopped and left the voice chat.")
     except Exception as e:
         await message.reply(f"Error: {e}")
 
@@ -113,3 +109,4 @@ async def main():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
+    
