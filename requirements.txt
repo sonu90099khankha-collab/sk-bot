@@ -1,2 +1,2 @@
-pytgcalls[pyrogram]
+pytgcalls>=3.0.0
 yt-dlp
