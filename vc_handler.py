@@ -4,8 +4,10 @@ from pytgcalls.types import AudioPiped, VideoPiped
 def setup_vc_calls(app):
     try:
         call_py = PyTgCalls(app)
+        call_py.start()
         return call_py
-    except Exception:
+    except Exception as e:
+        print(f"PyTgCalls Setup Error: {e}")
         return None
 
 async def start_vc_player(call_py, chat_id, url, is_video=False):
@@ -24,7 +26,7 @@ async def start_vc_player(call_py, chat_id, url, is_video=False):
             )
         return True
     except Exception as e:
-        print(f"VC Error: {e}")
+        print(f"VC Play Error: {e}")
         return False
 
 async def stop_vc_player(call_py, chat_id):
