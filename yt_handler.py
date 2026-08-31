@@ -1,4 +1,5 @@
-import yt_dlp
+import urllib.request
+import json
 
 def get_youtube_stream_url(query):
     if not query:
@@ -7,27 +8,23 @@ def get_youtube_stream_url(query):
     if "youtube.com" in query or "youtu.be" in query:
         return query
         
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'noplaylist': True,
-        'quiet': True,
-        'skip_download': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web'],
-            }
-        },
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    }
-    
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            search_results = ydl.extract_info(f"ytsearch1:{query}", download=False)
-            if 'entries' in search_results and len(search_results['entries']) > 0:
-                song_info = search_results['entries'][0]
-                return song_info.get('url') or f"https://www.youtube.com/watch?v={song_info.get('id')}"
+        formatted_query = query.replace(" ", "+")
+        api_url = f"https://invidious.perennialverse.net/api/v1/search?q={formatted_query}&type=video"
+        
+        req = urllib.request.Request(
+            api_url, 
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            if data and len(data) > 0:
+                video_id = data[0].get('videoId')
+                if video_id:
+                    return f"https://www.youtube.com/watch?v={video_id}"
     except Exception as e:
-        print(f"YT Search Error: {e}")
+        print(f"API Search Error: {e}")
         
     return "https://www.youtube.com/watch?v=kJQP7kiw5Fk"
     
