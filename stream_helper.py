@@ -13,15 +13,6 @@ async def play_audio_stream(call_py, chat_id, url):
         )
     )
 
-async def play_video_stream(call_py, chat_id, url):
-    await call_py.join_group_call(
-        chat_id,
-        MediaStream(
-            url,
-            stream_type=MediaStream.Both
-        )
-    )
-
 async def stop_stream(call_py, chat_id):
     await call_py.leave_group_call(chat_id)
     
