@@ -65,39 +65,43 @@ def get_youtube_stream_url(query):
         print(f"Fast YT Handler Error: {e}")
         
     return None
-  from pyrogram import filters
+  from pyrogram import Client, filters
+from pyrogram.types import Message
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped
 from yt_handler import get_youtube_stream_url
 
-# Agar tera client 'app' ya 'bot' naam se hai toh uske hisab se decorator laga lena
-# Jaise: @app.on_message(filters.command("play"))
-
-async def play_music_command(client, message):
-    # Check karega ki gaane ka naam likha hai ya nahi
+@app.on_message(filters.command("play"))
+async def heavy_play_handler(client: Client, message: Message):
     if len(message.command) < 2:
-        await message.reply("❌ भाई गाने का नाम तो लिख! जैसे: `/play Kesariya`")
+        await message.reply("❌ Please provide a song name! Example: `/play Kesariya`")
         return
         
     query = " ".join(message.command[1:])
+    chat_id = message.chat.id
     
-    # Turant message bhejna taaki pata chale bot zinda hai aur kaam kar raha hai
     status_msg = await message.reply("🔍 Searching song...")
     
     try:
-        # yt_handler se stream URL mangwana
         stream_url = get_youtube_stream_url(query)
         
         if not stream_url:
-            await status_msg.edit("❌ Song not found. Thoda alag naam try kar bhai.")
+            await status_msg.edit("❌ Song not found. Try a different name.")
             return
             
-        # Yahan tera py-tgcalls ya voice chat join karne ka code aayega
-        # Jaise:
-        # chat_id = message.chat.id
-        # await call_py.join_group_call(chat_id, AudioPiped(stream_url))
+        try:
+            await pytgcalls.join_group_call(
+                chat_id,
+                AudioPiped(stream_url)
+            )
+        except Exception:
+            await pytgcalls.change_stream(
+                chat_id,
+                AudioPiped(stream_url)
+            )
         
-        await status_msg.edit(f"🎵 Playing: **{query}**")
+        await status_msg.edit(f"🎵 **Playing Now:** `{query}`")
         
     except Exception as e:
-        await status_msg.edit(f"❌ Error aa gaya: {str(e)}")
-        print(f"Play Command Error: {e}")
-  
+        await status_msg.edit(f"❌ Error: {str(e)}")
+        
