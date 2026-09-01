@@ -65,43 +65,69 @@ def get_youtube_stream_url(query):
         print(f"Fast YT Handler Error: {e}")
         
     return None
-  from pyrogram import Client, filters
-from pyrogram.types import Message
-from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
-from yt_handler import get_youtube_stream_url
+  import yt_dlp
+import re
+import os
 
-@app.on_message(filters.command("play"))
-async def heavy_play_handler(client: Client, message: Message):
-    if len(message.command) < 2:
-        await message.reply("❌ Please provide a song name! Example: `/play Kesariya`")
-        return
-        
-    query = " ".join(message.command[1:])
-    chat_id = message.chat.id
+def get_youtube_stream_url(query):
+    if not query:
+        return None
     
-    status_msg = await message.reply("🔍 Searching song...")
+    query = str(query).strip()
     
+    if "youtube.com" in query or "youtu.be" in query:
+        match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', query)
+        if match:
+            video_id = match.group(1)
+            query = f"https://www.youtube.com/watch?v={video_id}"
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'noplaylist': True,
+        'quiet': True,
+        'extract_flat': False,
+        'skip_download': True,
+        'geo_bypass': True,
+        'socket_timeout': 20,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios', 'mweb', 'web', 'android']
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        }
+    }
+
+    if os.path.exists('cookies.txt'):
+        ydl_opts['cookiefile'] = 'cookies.txt'
+
+    search_target = query if ("youtube.com" in query or "youtu.be" in query) else f"ytsearch1:{query}"
+
     try:
-        stream_url = get_youtube_stream_url(query)
-        
-        if not stream_url:
-            await status_msg.edit("❌ Song not found. Try a different name.")
-            return
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(search_target, download=False)
             
-        try:
-            await pytgcalls.join_group_call(
-                chat_id,
-                AudioPiped(stream_url)
-            )
-        except Exception:
-            await pytgcalls.change_stream(
-                chat_id,
-                AudioPiped(stream_url)
-            )
-        
-        await status_msg.edit(f"🎵 **Playing Now:** `{query}`")
-        
+            if 'entries' in info and len(info['entries']) > 0:
+                entry = info['entries'][0]
+            else:
+                entry = info
+                
+            if entry:
+                formats = entry.get('formats', [])
+                for f in formats:
+                    if f.get('acodec') != 'none' and f.get('url'):
+                        return f['url']
+                
+                if 'url' in entry and entry['url']:
+                    return entry['url']
+                    
+                vid = entry.get('id')
+                if vid:
+                    return f"https://www.youtube.com/watch?v={vid}"
+                    
     except Exception as e:
-        await status_msg.edit(f"❌ Error: {str(e)}")
+        print(f"Heavy YT Handler Error: {e}")
+        
+    return None
         
