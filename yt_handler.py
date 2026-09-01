@@ -1,34 +1,30 @@
-import urllib.request
-import urllib.parse
-import json
+import yt_dlp
 
 def get_youtube_stream_url(query):
     if not query:
         return None
     
+    # Agar user ne seedha YouTube ka link diya hai
     if "youtube.com" in query or "youtu.be" in query:
         return query
         
     try:
-        # Properly encodes the query to prevent ascii codec errors with Hindi or special characters
-        encoded_query = urllib.parse.quote(query)
+        # yt-dlp ka use karke real-time me YouTube se song search karke uska direct stream URL ya video link nikalna
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'noplaylist': True,
+            'quiet': True,
+            'default_search': 'ytsearch1'
+        }
         
-        # Using a stable Invidious instance API
-        api_url = f"https://vid.puffyan.us/api/v1/search?q={encoded_query}&type=video"
-        
-        req = urllib.request.Request(
-            api_url, 
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode())
-            if data and len(data) > 0:
-                video_id = data[0].get('videoId')
-                if video_id:
-                    return f"https://www.youtube.com/watch?v={video_id}"
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            # ytsearch1 matlab pehla sabse accha result uthayega
+            info = ydl.extract_info(f"ytsearch:{query}", download=False)
+            if 'entries' in info and len(info['entries']) > 0:
+                video_url = info['entries'][0].get('url') or f"https://www.youtube.com/watch?v={info['entries'][0].get('id')}"
+                return video_url
     except Exception as e:
-        print(f"API Search Error: {e}")
+        print(f"YT-DLP Search Error: {e}")
         
-    return "https://www.youtube.com/watch?v=kJQP7kiw5Fk"
+    return None
     
