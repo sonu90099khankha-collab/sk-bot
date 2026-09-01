@@ -1,6 +1,6 @@
-import yt_dlp
-import re
-import os
+import urllib.request
+import urllib.parse
+import json
 
 def get_youtube_stream_url(query):
     if not query:
@@ -9,46 +9,28 @@ def get_youtube_stream_url(query):
     query = str(query).strip()
     
     if "youtube.com" in query or "youtu.be" in query:
-        match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', query)
-        if match:
-            query = f"https://www.youtube.com/watch?v={match.group(1)}"
-
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'noplaylist': True,
-        'quiet': True,
-        'skip_download': True,
-        'geo_bypass': True,
-        'default_search': 'ytsearch',
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
-        'http_headers': {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-    }
-
-    if os.path.exists('cookies.txt'):
-        ydl_opts['cookiefile'] = 'cookies.txt'
-
-    search_target = query if ("youtube.com" in query or "youtu.be" in query) else f"ytsearch:{query}"
-
+        return query
+        
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(search_target, download=False)
-            
-            if 'entries' in info and info['entries']:
-                info = info['entries'][0]
-                
-            if info:
-                # Direct url fallback
-                if 'url' in info:
-                    return info['url']
-                    
-                # Formats check
-                formats = info.get('formats', [])
-                for f in formats:
-                    if f.get('url'):
-                        return f['url']
-                        
+        # Properly encodes the query to prevent ascii codec errors with Hindi or special characters
+        encoded_query = urllib.parse.quote(query)
+        
+        # Using a stable Invidious instance API
+        api_url = f"https://vid.puffyan.us/api/v1/search?q={encoded_query}&type=video"
+        
+        req = urllib.request.Request(
+            api_url, 
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            if data and len(data) > 0:
+                video_id = data[0].get('videoId')
+                if video_id:
+                    return f"https://www.youtube.com/watch?v={video_id}"
     except Exception as e:
-        print(f"YT Handler Error: {e}")
+        print(f"API Search Error: {e}")
         
     return None
-  
+    
