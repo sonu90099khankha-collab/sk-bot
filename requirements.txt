@@ -1,4 +1,5 @@
-pyrogram==2.0.106
-tgcrypto
+pyrogram
+pytgcalls
+fastapi
+uvicorn
 yt-dlp
-py-tgcalls==0.9.7
