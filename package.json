@@ -1,9 +1,0 @@
-{
-  "name": "telegram-music-bot",
-  "version": "1.0.0",
-  "description": "Telegram Music Bot for VC",
-  "engines": {
-    "node": "18.x"
-  },
-  dependencies": {}
-}
