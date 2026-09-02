@@ -149,7 +149,9 @@ async def stop_call(client, message):
             await call_py.leave_group_call(chat_id)
         except Exception:
             pass
-        await message.reply("⏹ Stream stopped.")
+     await message.reply("⏹ Stream stopped.")
+
+import asyncio
 
 async def main():
     await app.start()
@@ -160,5 +162,10 @@ async def main():
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     
+    loop.run_until_complete(main())
