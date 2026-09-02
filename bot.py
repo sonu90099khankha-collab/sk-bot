@@ -152,14 +152,13 @@ async def stop_call(client, message):
         await message.reply("⏹ Stream stopped.")
 
 async def main():
-    if call_py:
-        await call_py.start()
     await app.start()
     await ass.start()
+    if call_py:
+        await call_py.start()
     print("-> Bot and Assistant started successfully!")
-    await asyncio.gather(app.loop.create_task(asyncio.Event().wait()))
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
     
-  
