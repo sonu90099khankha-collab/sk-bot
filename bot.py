@@ -1,5 +1,17 @@
 import os
 import asyncio
+
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
+from pyrogram import Client, filters
+import os
+import asyncio
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
 from pyrogram import Client, filters
