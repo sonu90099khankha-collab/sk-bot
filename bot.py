@@ -125,6 +125,6 @@ async def stop_call(client, message):
         except Exception:
             pass
     await message.reply("⏹️ Stopped streaming.")
-
-if name == "main":
+if __name__ == "__main__":
     app.run()
+    
