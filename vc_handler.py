@@ -6,6 +6,8 @@ from pyrogram import Client
 def setup_vc_calls(app):
     try:
         string_session = os.getenv("STRING_SESSION", "")
+        print(f"DEBUG: String Session Length -> {len(string_session)}") # इससे पता चलेगा सेशन लोड हुआ या नहीं
+        
         if string_session:
             assistant = Client(
                 "assistant",
@@ -15,15 +17,17 @@ def setup_vc_calls(app):
             )
             call_py = PyTgCalls(assistant)
         else:
+            print("DEBUG: STRING_SESSION missing, using main app")
             call_py = PyTgCalls(app)
             
         return call_py
     except Exception as e:
-        print(f"PyTgCalls Setup Error: {e}")
+        print(f"CRITICAL PyTgCalls Setup Error: {e}") # असली एरर यहाँ प्रिंट होगा
         return None
 
 async def start_vc_player(call_py, chat_id, url, is_video=False):
     if not call_py:
+        print("DEBUG: call_py is None inside start_vc_player")
         return False
     try:
         if not call_py.is_connected:
