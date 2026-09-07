@@ -1,9 +1,23 @@
+import os
 from pytgcalls import PyTgCalls
 from pytgcalls.types import AudioPiped, VideoPiped
+from pyrogram import Client
 
 def setup_vc_calls(app):
     try:
-        return PyTgCalls(app)
+        string_session = os.getenv("STRING_SESSION", "")
+        if string_session:
+            assistant = Client(
+                "assistant",
+                api_id=int(os.getenv("API_ID", "0")),
+                api_hash=os.getenv("API_HASH", ""),
+                session_string=string_session
+            )
+            call_py = PyTgCalls(assistant)
+        else:
+            call_py = PyTgCalls(app)
+            
+        return call_py
     except Exception as e:
         print(f"PyTgCalls Setup Error: {e}")
         return None
